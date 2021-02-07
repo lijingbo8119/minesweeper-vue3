@@ -17,18 +17,13 @@ jobs:
     - uses: borales/actions-yarn@v2.0.0
       with:
         cmd: build
-    
-    - name: move files
-      run: |
-          rm -rf !(dist)
-          mv ./dist/* ./
           
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
         deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         external_repository: lijingbo8119/lijingbo8119.github.io
-        publish_dir: ""
+        publish_dir: ./dist
         keep_files: false 
         publish_branch: master
         commit_message: ${{ github.event.head_commit.message }}
