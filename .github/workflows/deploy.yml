@@ -9,12 +9,20 @@ jobs:
     environment: production
     steps:
     - uses: actions/checkout@v2
+      
     - uses: borales/actions-yarn@v2.0.0
       with:
         cmd: install
+    
     - uses: borales/actions-yarn@v2.0.0
       with:
         cmd: build
+    
+    - name: move files
+      run: |
+          rm -rf !(dist)
+          mv ./dist/* ./
+          
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:
