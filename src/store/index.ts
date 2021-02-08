@@ -5,6 +5,8 @@ import {
   SET_ACTIVE_SQUARE_COORDINATE,
   SET_FAILED,
   SET_MATRIX,
+  SET_SUCCEED,
+  INIT_START_TIMESTAMP,
 } from "@/store/mutation-types";
 import {
   INIT_MATRIX,
@@ -17,14 +19,25 @@ import {
 import * as _ from 'lodash'
 import {Coordinate} from "@/model/interface";
 import {Square, SquareStatus, SquareType} from "@/model/square";
+import {getMatrixStatus} from "@/model/matrix";
 
 export default createStore({
   state: {
     failed: false,
+    succeed: false,
+    bombsCount: 0,
+    markedCount: 0,
+
+    startTimestamp: 0,
+    endTimestamp: 0,
+    duration: 0,
+    durationTimerId: 0,
+
     activeSquareCoordinate: {
       rowIndex: -1,
       colIndex: -1,
     } as Coordinate,
+
     matrix: [] as Array<Array<Square>>,
   },
   mutations: {
@@ -34,14 +47,35 @@ export default createStore({
     [SET_ACTIVE_SQUARE_COORDINATE](state, {coordinate}) {
       state.activeSquareCoordinate = coordinate
     },
-    [SET_MATRIX](state, {matrix}) {
+    [SET_MATRIX](state, {matrix, bombsCount}) {
       state.activeSquareCoordinate = {rowIndex: -1, colIndex: -1}
       state.matrix = matrix
+      state.succeed = false;
       state.failed = false;
+      state.startTimestamp = 0;
+      state.endTimestamp = 0;
+      state.duration = 0;
+      state.bombsCount = bombsCount;
+      state.markedCount = 0;
     },
     [SET_FAILED](state) {
       state.activeSquareCoordinate = {rowIndex: -1, colIndex: -1}
       state.failed = true;
+      state.endTimestamp = Date.parse(new Date().toString());
+      clearInterval(state.durationTimerId)
+    },
+    [SET_SUCCEED](state) {
+      state.activeSquareCoordinate = {rowIndex: -1, colIndex: -1}
+      state.succeed = true;
+      state.endTimestamp = Date.parse(new Date().toString());
+      clearInterval(state.durationTimerId)
+    },
+    [INIT_START_TIMESTAMP](state) {
+      if (state.startTimestamp) {
+        return;
+      }
+      state.startTimestamp = Date.parse(new Date().toString());
+      state.durationTimerId = setInterval(() => state.duration = (Date.parse(new Date().toString()) - state.startTimestamp) / 1000, 200)
     },
   },
   actions: {
@@ -63,6 +97,11 @@ export default createStore({
         return;
       }
 
+      const status = getMatrixStatus(state.matrix)
+      state.markedCount = status.markedSquaresCount + status.markedBombsCount;
+
+      status.succeed ? commit(SET_SUCCEED) : null;
+      commit(INIT_START_TIMESTAMP)
       commit(RESET_ACTIVE_SQUARE_COORDINATE)
     },
     [SQUARE_MOUSE_UP_RIGHT]({commit, state}, {coordinate, isRecursive}) {
@@ -73,6 +112,11 @@ export default createStore({
 
       state.matrix[coordinate.rowIndex][coordinate.colIndex].mark()
 
+      const status = getMatrixStatus(state.matrix)
+      state.markedCount = status.markedSquaresCount + status.markedBombsCount;
+
+      status.succeed ? commit(SET_SUCCEED) : null;
+      commit(INIT_START_TIMESTAMP)
       commit(RESET_ACTIVE_SQUARE_COORDINATE)
     },
     [SQUARE_MOUSE_LEAVE]({commit, state}, {coordinate}) {
@@ -82,6 +126,7 @@ export default createStore({
       }
     },
     [INIT_MATRIX]({commit}, {rowsLength, colsLength, bombsCount}) {
+      let _bombsCount = bombsCount;
       if (rowsLength < 9 || colsLength < 9 || bombsCount >= rowsLength * colsLength) {
         throw 'INIT_MATRIX error'
       }
@@ -91,7 +136,7 @@ export default createStore({
       for (let i = 0; i < squaresCount; i++) {
         tempArr.push({
           status: SquareStatus.closed,
-          type: bombsCount-- > 0 ? SquareType.bomb : SquareType.normal,
+          type: _bombsCount-- > 0 ? SquareType.bomb : SquareType.normal,
         });
       }
       tempArr = _.shuffle(tempArr)
@@ -111,8 +156,9 @@ export default createStore({
         }
       }
 
-      commit(SET_MATRIX, {matrix})
+      commit(SET_MATRIX, {matrix, bombsCount})
     },
   },
+  getters: {},
   modules: {}
 })

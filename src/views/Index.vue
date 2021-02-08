@@ -3,8 +3,13 @@
   几行<input type="number" v-model="rowsLength"><br>
   几列<input type="number" v-model="colsLength"><br>
   几个雷<input type="number" v-model="bombsCount"><br>
-  <button @click="run">开始</button><br>
-
+  <button @click="run">开始</button>
+  <br>
+  <div class="row" oncontextmenu="self.event.returnValue=false" style="margin-bottom: 10px">
+    <bombs-count style="margin-right: 80px"></bombs-count>
+    <smile-face @run="run"></smile-face>
+    <timer style="margin-left: 80px"></timer>
+  </div>
   <div v-for="(row, index) in matrix" :key="index" class="row" oncontextmenu="self.event.returnValue=false">
     <template v-for="(sq, i) in row" :key="i">
       <square-container :square="sq" :matrix="matrix"></square-container>
@@ -14,13 +19,16 @@
 
 <script lang="ts">
 import {defineComponent} from 'vue';
+import SmileFace from "@/components/SmileFace.vue";
+import BombsCount from "@/components/BombsCount.vue";
+import Timer from "@/components/Timer.vue";
 import SquareContainer from "@/components/SquareContainer.vue";
 import {INIT_MATRIX} from "@/store/action-types";
 import {Square} from "@/model/square";
 
 export default defineComponent({
   name: 'Index',
-  components: {SquareContainer},
+  components: {SmileFace, SquareContainer, BombsCount, Timer},
   data() {
     return {
       rowsLength: 9,
@@ -42,7 +50,7 @@ export default defineComponent({
     },
     run() {
       this.initMatrix({rowsLength: this.rowsLength, colsLength: this.colsLength, bombsCount: this.bombsCount})
-    }
+    },
   },
   mounted() {
     this.run()
@@ -53,5 +61,6 @@ export default defineComponent({
 <style scoped>
 .row {
   height: 32px;
+  text-align: center;
 }
 </style>

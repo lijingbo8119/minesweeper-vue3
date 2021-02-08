@@ -19,7 +19,7 @@ import {
   SQUARE_MOUSE_UP_RIGHT,
 } from "@/store/action-types";
 import {Coordinate} from "@/model/interface";
-import {Square, SquareStatus} from "@/model/square";
+import {Square, SquareStatus, SquareType} from "@/model/square";
 
 export default defineComponent({
   name: 'Square',
@@ -56,6 +56,9 @@ export default defineComponent({
       }
       if (square.getStatus() === SquareStatus.exploded) {
         return require(`@/assets/image/mine2.gif`);
+      }
+      if (square.getStatus() === SquareStatus.markedBomb && square.getType() === SquareType.normal && this.failed) {
+        return require(`@/assets/image/mine1.gif`);
       }
       if (square.getStatus() === SquareStatus.markedBomb) {
         return require(`@/assets/image/flag.gif`);
