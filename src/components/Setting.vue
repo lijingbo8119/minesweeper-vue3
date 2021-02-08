@@ -1,25 +1,25 @@
 <template>
   <div style="width: 100%; margin: 20px 0 0 0; text-align: center;">
-    <div style="width: 188px; display: inline-block;">
+    <div style="width: 270px; display: inline-block;">
       <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid" style="text-align: center;">
-        <label><input class="uk-radio" type="radio" name="level" :value="1" v-model="level" checked> 初级</label>
-        <label><input class="uk-radio" type="radio" name="level" :value="2" v-model="level"> 中级</label>
-        <label><input class="uk-radio" type="radio" name="level" :value="3" v-model="level"> 高级</label>
+        <label><input class="uk-radio" type="radio" name="level" :value="1" v-model="level" checked> Easy</label>
+        <label><input class="uk-radio" type="radio" name="level" :value="2" v-model="level"> Intermediate</label>
+        <label><input class="uk-radio" type="radio" name="level" :value="3" v-model="level"> Expert</label>
         <template v-if="false">
-          <label><input class="uk-radio" type="radio" name="level" :value="4" v-model="level"> 自定</label>
+          <label><input class="uk-radio" type="radio" name="level" :value="4" v-model="level"> Custom</label>
         </template>
       </div>
       <a class="uk-button uk-button-primary uk-button-small" @click="run" v-show="false">Go</a>
 
       <template v-if="level===4">
         <div class="uk-margin">
-          <input class="uk-input uk-form-small" type="number" placeholder="几行" min="9" max="30" v-model="rowsLength">
+          <input class="uk-input uk-form-small" type="number" placeholder="Rows" min="9" max="30" v-model="rowsLength">
         </div>
         <div class="uk-margin">
-          <input class="uk-input uk-form-small" type="number" placeholder="几列" min="9" max="30" v-model="colsLength">
+          <input class="uk-input uk-form-small" type="number" placeholder="Cols" min="9" max="30" v-model="colsLength">
         </div>
         <div class="uk-margin">
-          <input class="uk-input uk-form-small" type="number" placeholder="几个雷" min="1" v-model="bombsCount">
+          <input class="uk-input uk-form-small" type="number" placeholder="Mines" min="1" v-model="bombsCount">
         </div>
       </template>
     </div>
