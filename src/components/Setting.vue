@@ -1,13 +1,15 @@
 <template>
-  <div style="width: 100%; margin: 20px 0; text-align: center;">
-    <div style="width: 270px; display: inline-block;">
+  <div style="width: 100%; margin: 20px 0 0 0; text-align: center;">
+    <div style="width: 188px; display: inline-block;">
       <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid" style="text-align: center;">
         <label><input class="uk-radio" type="radio" name="level" :value="1" v-model="level" checked> 初级</label>
         <label><input class="uk-radio" type="radio" name="level" :value="2" v-model="level"> 中级</label>
         <label><input class="uk-radio" type="radio" name="level" :value="3" v-model="level"> 高级</label>
-        <label><input class="uk-radio" type="radio" name="level" :value="4" v-model="level"> 自定</label>
+        <template v-if="false">
+          <label><input class="uk-radio" type="radio" name="level" :value="4" v-model="level"> 自定</label>
+        </template>
       </div>
-      <a class="uk-button uk-button-primary uk-button-small" @click="run">Go</a>
+      <a class="uk-button uk-button-primary uk-button-small" @click="run" v-show="false">Go</a>
 
       <template v-if="level===4">
         <div class="uk-margin">
@@ -63,6 +65,7 @@ export default defineComponent({
           this.bombsCount = 99;
           break;
       }
+      this.run()
     }
   }
 })
