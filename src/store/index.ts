@@ -1,12 +1,12 @@
 import {reactive} from 'vue'
 import {createStore} from 'vuex'
 import {
+  INIT_START_TIMESTAMP,
   RESET_ACTIVE_SQUARE_COORDINATE,
   SET_ACTIVE_SQUARE_COORDINATE,
   SET_FAILED,
   SET_MATRIX,
   SET_SUCCEED,
-  INIT_START_TIMESTAMP,
 } from "@/store/mutation-types";
 import {
   INIT_MATRIX,
@@ -79,10 +79,15 @@ export default createStore({
     },
   },
   actions: {
-    [SQUARE_MOUSE_DOWN_LEFT]({commit}, {coordinate}) {
+    [SQUARE_MOUSE_DOWN_LEFT]({commit, state}, {coordinate}) {
+      const square = state.matrix[coordinate.rowIndex][coordinate.colIndex];
+      square.getStatus() === SquareStatus.closed ? square.setStatus(SquareStatus.mousedown) : null;
       commit(SET_ACTIVE_SQUARE_COORDINATE, {coordinate})
     },
-    [SQUARE_MOUSE_DOWN_RIGHT]({commit}, {coordinate}) {
+    [SQUARE_MOUSE_DOWN_RIGHT]({commit, state}, {coordinate}) {
+      if (state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.opened) {
+        state.matrix[coordinate.rowIndex][coordinate.colIndex].mousedownAroundSquares(state.matrix)
+      }
       commit(SET_ACTIVE_SQUARE_COORDINATE, {coordinate})
     },
     [SQUARE_MOUSE_UP_LEFT]({commit, state}, {coordinate, isRecursive}) {
@@ -110,7 +115,13 @@ export default createStore({
         return
       }
 
-      state.matrix[coordinate.rowIndex][coordinate.colIndex].mark()
+      if (state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.closed) {
+        state.matrix[coordinate.rowIndex][coordinate.colIndex].mark()
+      }
+
+      if (state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.opened) {
+        state.matrix[coordinate.rowIndex][coordinate.colIndex].openAroundSquares(state.matrix)
+      }
 
       const status = getMatrixStatus(state.matrix)
       state.markedCount = status.markedSquaresCount + status.markedBombsCount;
@@ -121,6 +132,9 @@ export default createStore({
     },
     [SQUARE_MOUSE_LEAVE]({commit, state}, {coordinate}) {
       if (coordinate.rowIndex === state.activeSquareCoordinate.rowIndex || coordinate.colIndex === state.activeSquareCoordinate.colIndex) {
+        const square = state.matrix[coordinate.rowIndex][coordinate.colIndex];
+        square.getStatus() === SquareStatus.mousedown ? square.setStatus(SquareStatus.closed) : null;
+        square.mouseupAroundSquares(state.matrix)
         commit(RESET_ACTIVE_SQUARE_COORDINATE)
         return
       }

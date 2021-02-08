@@ -50,6 +50,9 @@ export default defineComponent({
     },
     imgSrc() {
       const square = this.square as Square;
+      if (square.getStatus() === SquareStatus.mousedown) {
+        return require(`@/assets/image/mousedown.gif`);
+      }
       if (square.getStatus() === SquareStatus.opened) {
         const bombCount = square.getAroundBombsCount(this.matrix as Array<Array<Square>>);
         return require(`@/assets/image/${bombCount}.gif`);

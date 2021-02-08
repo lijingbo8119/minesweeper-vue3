@@ -6,6 +6,7 @@ export enum SquareType {
 }
 
 export enum SquareStatus {
+  mousedown,
   closed,
   opened,
   exploded,
@@ -24,8 +25,6 @@ export class Square {
   private readonly type: SquareType;
   private status: SquareStatus;
 
-  private aroundBombsCount = -1;
-
   constructor({coordinate, type, status}: SquareParam) {
     this.coordinate = coordinate;
     this.type = type;
@@ -40,11 +39,20 @@ export class Square {
     return this.status;
   }
 
+  public setStatus(status: SquareStatus): Square {
+    this.status = status;
+    return this
+  }
+
   public getType(): SquareType {
     return this.type;
   }
 
   public open(matrix: Array<Array<Square>>, isRecursive = false): void {
+    if (this.getStatus() === SquareStatus.mousedown) {
+      this.setStatus(SquareStatus.closed);
+    }
+
     if (this.getStatus() !== SquareStatus.closed) {
       return;
     }
@@ -119,16 +127,44 @@ export class Square {
       })
   }
 
-  public getAroundBombsCount(matrix: Array<Array<Square>>): number {
-    if (this.aroundBombsCount !== -1) {
-      return this.aroundBombsCount;
+  public getAroundBombsCount(matrix: Array<Array<Square>>, status: SquareStatus | null = null): number {
+    let aroundBombsCount = 0;
+    this.getAroundSquareCoordinates(matrix)
+      .forEach(coordinate => {
+        const square = Square.getSquareByCoordinate(matrix, coordinate);
+        if (status === null) {
+          square?.getType() === SquareType.bomb ? aroundBombsCount++ : null
+        } else {
+          square?.getType() === SquareType.bomb && square?.getStatus() === status ? aroundBombsCount++ : null
+        }
+      })
+
+    return aroundBombsCount;
+  }
+
+  public mousedownAroundSquares(matrix: Array<Array<Square>>) {
+    this.getAroundSquareCoordinates(matrix).map(coordinate => Square.getSquareByCoordinate(matrix, coordinate) as Square)
+      .filter(square => square.getStatus() === SquareStatus.closed)
+      .forEach(square => square.setStatus(SquareStatus.mousedown))
+  }
+
+  public mouseupAroundSquares(matrix: Array<Array<Square>>) {
+    this.getAroundSquareCoordinates(matrix).map(coordinate => Square.getSquareByCoordinate(matrix, coordinate) as Square)
+      .filter(square => square.getStatus() === SquareStatus.mousedown)
+      .forEach(square => square.setStatus(SquareStatus.closed))
+  }
+
+  public openAroundSquares(matrix: Array<Array<Square>>) {
+    this.mouseupAroundSquares(matrix)
+
+    const aroundClosedBombsCount = this.getAroundBombsCount(matrix, SquareStatus.closed)
+    if (aroundClosedBombsCount) {
+      return;
     }
 
-    this.aroundBombsCount = 0;
-    this.getAroundSquareCoordinates(matrix)
-      .forEach(coordinate => (Square.getSquareByCoordinate(matrix, coordinate) as Square).getType() === SquareType.bomb ? this.aroundBombsCount++ : null)
-
-    return this.aroundBombsCount;
+    this.getAroundSquareCoordinates(matrix).map(coordinate => Square.getSquareByCoordinate(matrix, coordinate) as Square)
+      .filter(square => square.getStatus() === SquareStatus.closed)
+      .forEach(square => square.open(matrix))
   }
 
   private static getSquareByCoordinate(matrix: Array<Array<Square>>, coordinate: Coordinate): Square | null {
