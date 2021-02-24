@@ -115,7 +115,7 @@ export default createStore({
         return
       }
 
-      if (state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.closed) {
+      if (state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.closed || state.matrix[coordinate.rowIndex][coordinate.colIndex].getStatus() === SquareStatus.markedBomb) {
         state.matrix[coordinate.rowIndex][coordinate.colIndex].mark()
       }
 
